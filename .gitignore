@@ -1,0 +1,10 @@
+**/.vs
+**/.vscode
+**/*.*proj.user
+**/*.dbmdl
+**/*.jfm
+**/azds.yaml
+**/bin
+**/node_modules
+**/npm-debug.log
+**/obj

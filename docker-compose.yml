@@ -1,0 +1,76 @@
+version: '3.4'
+
+services:   
+  webui:
+    image: ${DOCKER_REGISTRY-}webui
+    build:
+      context: .
+      dockerfile: WebUI/Dockerfile
+    environment:
+      - API_URL=gateway:80
+    ports:
+      - "80:80"
+    volumes:
+      - "./WebUI/dist/WebUI:/usr/share/nginx/html"
+    networks:
+      - frontend
+    depends_on:
+      - gateway
+
+  gateway:
+    image: ${DOCKER_REGISTRY-}gateway
+    build:
+      context: .
+      dockerfile: SagaExample.Gateways/Dockerfile    
+    networks:
+      - frontend
+      - backend
+    # depends_on:
+    #   - identityserver
+
+  product:
+    image: ${DOCKER_REGISTRY-}product
+    build:
+      context: .
+      dockerfile: SagaExample.Product.WebApi/Dockerfile
+    networks:
+      - backend
+  
+  order:
+    image: ${DOCKER_REGISTRY-}order
+    build:
+      context: .
+      dockerfile: SagaExample.Order.WebApi/Dockerfile
+    networks:
+      - backend
+
+  # identityserver:
+  #   image: ${DOCKER_REGISTRY-}identityserver
+  #   build:
+  #     context: .
+  #     dockerfile: SagaExample.IdentityServer/Dockerfile    
+  #   networks:
+  #     - backend
+  #     - frontend
+
+  broker:
+    image: "rabbitmq:3.8.2-management"
+    environment:
+      RABBITMQ_DEFAULT_USER: "rabbitmq"
+      RABBITMQ_DEFAULT_PASS: "rabbitmq"
+      RABBITMQ_DEFAULT_VHOST: "/"
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    volumes:
+      - ./rabbitmq-isolated.conf:/etc/rabbitmq/rabbitmq.config
+      - "./rabbitmq.config:/etc/rabbitmq/rabbitmq.config:ro"
+    networks:
+      - backend
+
+networks:
+  # Declare our private network.  We must declare one for the magic
+  # Docker DNS to work, but otherwise its default settings are fine.
+  frontend: {}
+  backend: {}
+
